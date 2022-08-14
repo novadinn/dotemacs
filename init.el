@@ -14,7 +14,6 @@
 (use-package modern-cpp-font-lock
   :ensure t)
 
-;; stops startup message
 (setq inhibit-splash-screen t)
 (add-hook 'window-setup-hook 'toggle-frame-maximized t)
 ; (menu-bar-mode -1)
@@ -24,6 +23,21 @@
 (setq visible-bell 1)
 (add-to-list 'default-frame-alist '(height . 40))
 (add-to-list 'default-frame-alist '(width . 90))
+(setq c-default-style "linux"
+      c-basic-offset 4)
+(add-hook 'prog-mode-hook 'display-line-numbers-mode)
+(setq-default truncate-lines t)
+;; replace highlighted text with a new text
+(delete-selection-mode 1)
+(setq undo-limit 20000000)
+(setq undo-strong-limit 40000000)
+(setq scroll-step 1)
+(setq confirm-kill-emacs 'y-or-n-p)
+(fset 'yes-or-no-p 'y-or-n-p)
+(put 'upcase-region 'disabled nil)
+(put 'downcase-region 'disabled nil)
+(ido-mode t)
+(split-window-horizontally)
 
 (defvar backup-dir (expand-file-name "~/.emacs.d/emacs-backup/"))
 (defvar autosave-dir (expand-file-name "~/.emacs.d/autosave/"))
@@ -60,25 +74,57 @@
 	      (set-visited-file-name newname)
 	      (set-buffer-modified-p nil) t))))
 
-(setq c-default-style "linux"
-      c-basic-offset 4)
-(add-hook 'prog-mode-hook 'display-line-numbers-mode)
-(setq-default truncate-lines t)
-;; replace highlighted text with a new text
-(delete-selection-mode 1)
+(defun back-to-indentation-or-beginning ()
+  (interactive "^")
+  (let ((oldpos (point)))
+    (back-to-indentation)
+    (and (= oldpos (point))
+         (progn (move-beginning-of-line nil)
+                (when (= (line-beginning-position) (line-end-position))
+                  (save-excursion (indent-according-to-mode)))))))
+(global-set-key (kbd "<home>") 'back-to-indentation-or-beginning)
+
+(defun move-text-internal (arg)
+  (cond
+   ((and mark-active transient-mark-mode)
+    (if (> (point) (mark))
+        (exchange-point-and-mark))
+    (let ((column (current-column))
+          (text (delete-and-extract-region (point) (mark))))
+      (forward-line arg)
+      (move-to-column column t)
+      (set-mark (point))
+      (insert text)
+      (exchange-point-and-mark)
+      (setq deactivate-mark nil)))
+   (t
+    (let ((column (current-column)))
+      (beginning-of-line)
+      (when (or (> arg 0) (not (bobp)))
+        (forward-line)
+        (when (or (< arg 0) (not (eobp)))
+          (transpose-lines arg))
+        (forward-line -1))
+      (move-to-column column t)))))
+(defun move-text-down (arg)
+  (interactive "*p")
+  (move-text-internal arg))
+(defun move-text-up (arg)
+  (interactive "*p")
+  (move-text-internal (- arg)))
+(provide 'move-text)
+(global-set-key [M-up] 'move-text-up)
+(global-set-key [M-down] 'move-text-down)
+
 (setq compile-command "build.bat")
-(setq undo-limit 20000000)
-(setq undo-strong-limit 40000000)
-;; highlight current line
-(global-hl-line-mode 1)
-(set-face-background 'hl-line "light blue")
-(setq scroll-step 1)
-(setq confirm-kill-emacs 'y-or-n-p)
 (global-set-key [f5] 'compile)
 
 (add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
 (load-theme 'vim-colors t)
-
+(set-face-attribute 'default nil :font "Consolas-11")
+;; highlight current line
+(global-hl-line-mode 1)
+(set-face-background 'hl-line "light blue")
 (setq fixme-modes '(c++-mode c-mode emacs-lisp-mode lisp-mode))
 (make-face 'font-lock-fixme-face)
 (make-face 'font-lock-note-face)
@@ -90,7 +136,7 @@
       fixme-modes)
 (modify-face 'font-lock-fixme-face "Red" nil nil t nil t nil nil)
 (modify-face 'font-lock-note-face "Green" nil nil t nil t nil nil)
-(set-face-attribute 'default nil :font "Consolas-11")
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
