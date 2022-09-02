@@ -27,7 +27,6 @@
       c-basic-offset 4)
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 (setq-default truncate-lines t)
-;; replace highlighted text with a new text
 (delete-selection-mode 1)
 (setq undo-limit 20000000)
 (setq undo-strong-limit 40000000)
@@ -36,7 +35,6 @@
 (fset 'yes-or-no-p 'y-or-n-p)
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
-(ido-mode t)
 (split-window-horizontally)
 
 (defvar backup-dir (expand-file-name "~/.emacs.d/emacs-backup/"))
@@ -44,8 +42,8 @@
 (setq backup-directory-alist (list (cons ".*" backup-dir)))
 (setq auto-save-list-file-prefix autosave-dir)
 (setq auto-save-file-name-transforms `((".*" ,autosave-dir t)))
-(setq tramp-backup-directory-alist backup-directory-alist)
-(setq tramp-auto-save-directory autosave-dir)
+(setq backup-directory-alist backup-directory-alist)
+(setq auto-save-directory autosave-dir)
 
 (defun rename-file-and-buffer (new-name)
   (interactive "sNew name: ")
@@ -116,7 +114,6 @@
 (global-set-key [M-up] 'move-text-up)
 (global-set-key [M-down] 'move-text-down)
 
-(setq compile-command "build.bat")
 (global-set-key [f5] 'compile)
 
 (add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
@@ -125,17 +122,35 @@
 ;; highlight current line
 (global-hl-line-mode 1)
 (set-face-background 'hl-line "light blue")
-(setq fixme-modes '(c++-mode c-mode emacs-lisp-mode lisp-mode))
-(make-face 'font-lock-fixme-face)
+
+(defvar font-lock-modes '(c++-mode c-mode emacs-lisp-mode lisp-mode))
+(make-face 'font-lock-todo-face)
 (make-face 'font-lock-note-face)
 (mapc (lambda (mode)
 	(font-lock-add-keywords
 	 mode
-	 '(("\\<\\(TODO\\)" 1 'font-lock-fixme-face t)
+	 '(("\\<\\(TODO\\)" 1 'font-lock-todo-face t)
            ("\\<\\(NOTE\\)" 1 'font-lock-note-face t))))
-      fixme-modes)
-(modify-face 'font-lock-fixme-face "Red" nil nil t nil t nil nil)
+      font-lock-modes)
+(modify-face 'font-lock-todo-face "Red" nil nil t nil t nil nil)
 (modify-face 'font-lock-note-face "Green" nil nil t nil t nil nil)
+
+
+(defvar last-file-name-handler-alist file-name-handler-alist)
+(setq gc-cons-threshold 402653184
+      gc-cons-percentage 0.6
+      file-name-handler-alist nil)
+(add-hook 'emacs-startup-hook
+	  (lambda ()
+	    (progn
+	      (setq gc-cons-threshold 16777216
+		    gc-cons-percentage 0.1
+		    file-name-handler-alist last-file-name-handler-alist))
+	    (message "Emacs ready in %s with %d garbage collections."
+                     (format "%.2f seconds"
+                             (float-time
+                              (time-subtract after-init-time before-init-time)))
+                     gcs-done)))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
