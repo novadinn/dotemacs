@@ -7,16 +7,12 @@
   (package-install 'use-package))
 (use-package try :ensure t)
 (use-package which-key :ensure t :config (which-key-mode))
-(use-package flycheck
-  :ensure t
-  :init
-  (global-flycheck-mode t))
 (use-package modern-cpp-font-lock
   :ensure t)
 
 (setq inhibit-splash-screen t)
 (add-hook 'window-setup-hook 'toggle-frame-maximized t)
-; (menu-bar-mode -1)
+(menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
 (setq default-directory "D:/Projects/")
@@ -35,7 +31,6 @@
 (fset 'yes-or-no-p 'y-or-n-p)
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
-(split-window-horizontally)
 
 (defvar backup-dir (expand-file-name "~/.emacs.d/emacs-backup/"))
 (defvar autosave-dir (expand-file-name "~/.emacs.d/autosave/"))
@@ -115,9 +110,12 @@
 (global-set-key [M-down] 'move-text-down)
 
 (global-set-key [f5] 'compile)
+(setq compile-command "")
 
-(add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
-(load-theme 'vim-colors t)
+(defvar theme-load-path "~/.emacs.d/themes/")
+(add-to-list 'custom-theme-load-path theme-load-path)
+(if (file-exists-p (concat theme-load-path "vim-colors-theme.el"))
+    (load-theme 'vim-colors t))
 (set-face-attribute 'default nil :font "Consolas-11")
 ;; highlight current line
 (global-hl-line-mode 1)
@@ -134,7 +132,6 @@
       font-lock-modes)
 (modify-face 'font-lock-todo-face "Red" nil nil t nil t nil nil)
 (modify-face 'font-lock-note-face "Green" nil nil t nil t nil nil)
-
 
 (defvar last-file-name-handler-alist file-name-handler-alist)
 (setq gc-cons-threshold 402653184
