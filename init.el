@@ -9,6 +9,9 @@
 (use-package which-key :ensure t :config (which-key-mode))
 (use-package modern-cpp-font-lock
   :ensure t)
+(use-package flycheck
+  :ensure t
+  :init (global-flycheck-mode))
 
 (setq inhibit-splash-screen t)
 (add-hook 'window-setup-hook 'toggle-frame-maximized t)
@@ -39,6 +42,10 @@
 (setq auto-save-file-name-transforms `((".*" ,autosave-dir t)))
 (setq backup-directory-alist backup-directory-alist)
 (setq auto-save-directory autosave-dir)
+
+(add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
+(add-to-list 'auto-mode-alist '("\\.vs\\'" . glsl-mode))
+(add-to-list 'auto-mode-alist '("\\.fs\\'" . glsl-mode))
 
 (defun rename-file-and-buffer (new-name)
   (interactive "sNew name: ")
@@ -75,6 +82,7 @@
          (progn (move-beginning-of-line nil)
                 (when (= (line-beginning-position) (line-end-position))
                   (save-excursion (indent-according-to-mode)))))))
+             
 (global-set-key (kbd "<home>") 'back-to-indentation-or-beginning)
 
 (defun move-text-internal (arg)
@@ -154,7 +162,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages '(which-key try use-package)))
+ '(package-selected-packages '(flycheck glsl-mode which-key try use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
