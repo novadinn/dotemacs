@@ -9,9 +9,6 @@
 (use-package which-key :ensure t :config (which-key-mode))
 (use-package modern-cpp-font-lock
   :ensure t)
-(use-package flycheck
-  :ensure t
-  :init (global-flycheck-mode))
 
 (setq inhibit-splash-screen t)
 (add-hook 'window-setup-hook 'toggle-frame-maximized t)
@@ -117,8 +114,28 @@
 (global-set-key [M-up] 'move-text-up)
 (global-set-key [M-down] 'move-text-down)
 
-(global-set-key [f5] 'compile)
-(setq compile-command "")
+(setq compilation-directory-locked nil)
+(setq makescript "build.bat")
+(defun find-project-directory ()
+  (defun find-project-directory-recursive ()
+    (interactive)
+    (if (file-exists-p makescript) t
+      (cd "../")
+      (find-project-directory-recursive)))
+  (interactive)
+  (setq find-project-from-directory default-directory)
+  (switch-to-buffer-other-window "*compilation*")
+  (if compilation-directory-locked
+      (cd last-compilation-directory)
+    (cd find-project-from-directory)
+    (find-project-directory-recursive)
+    (setq last-compilation-directory default-directory)))
+(defun make-build()
+  (interactive)
+  (if (find-project-directory)
+      (compile makescript))
+  (other-window 1))
+(global-set-key [f5] 'make-build)
 
 (defvar theme-load-path "~/.emacs.d/themes/")
 (add-to-list 'custom-theme-load-path theme-load-path)
@@ -162,7 +179,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages '(flycheck glsl-mode which-key try use-package)))
+ '(package-selected-packages '(glsl-mode which-key try use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
