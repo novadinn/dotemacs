@@ -114,7 +114,6 @@
 (global-set-key [M-up] 'move-text-up)
 (global-set-key [M-down] 'move-text-down)
 
-(setq compilation-directory-locked nil)
 (setq makescript "build.bat")
 (defun find-project-directory ()
   (defun find-project-directory-recursive ()
@@ -125,11 +124,9 @@
   (interactive)
   (setq find-project-from-directory default-directory)
   (switch-to-buffer-other-window "*compilation*")
-  (if compilation-directory-locked
-      (cd last-compilation-directory)
     (cd find-project-from-directory)
     (find-project-directory-recursive)
-    (setq last-compilation-directory default-directory)))
+    (setq last-compilation-directory default-directory))
 (defun make-build()
   (interactive)
   (if (find-project-directory)
@@ -149,14 +146,17 @@
 (defvar font-lock-modes '(c++-mode c-mode emacs-lisp-mode lisp-mode))
 (make-face 'font-lock-todo-face)
 (make-face 'font-lock-note-face)
+(make-face 'font-lock-fixme-face)
 (mapc (lambda (mode)
 	(font-lock-add-keywords
 	 mode
 	 '(("\\<\\(TODO\\)" 1 'font-lock-todo-face t)
-           ("\\<\\(NOTE\\)" 1 'font-lock-note-face t))))
+           ("\\<\\(NOTE\\)" 1 'font-lock-note-face t)
+	   ("\\<\\(FIXME\\)" 1 'font-lock-fixme-face t))))
       font-lock-modes)
-(modify-face 'font-lock-todo-face "Red" nil nil t nil t nil nil)
-(modify-face 'font-lock-note-face "Green" nil nil t nil t nil nil)
+(modify-face 'font-lock-todo-face "red" nil nil t nil t nil nil)
+(modify-face 'font-lock-note-face "green" nil nil t nil t nil nil)
+(modify-face 'font-lock-fixme-face "slate blue" nil nil t nil t nil nil)
 
 (defvar last-file-name-handler-alist file-name-handler-alist)
 (setq gc-cons-threshold 402653184
