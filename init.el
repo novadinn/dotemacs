@@ -31,6 +31,7 @@
 (fset 'yes-or-no-p 'y-or-n-p)
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
+(windmove-default-keybindings 'meta)
 
 (defvar backup-dir (expand-file-name "~/.emacs.d/emacs-backup/"))
 (defvar autosave-dir (expand-file-name "~/.emacs.d/autosave/"))
@@ -42,7 +43,65 @@
 
 (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
 (add-to-list 'auto-mode-alist '("\\.vs\\'" . glsl-mode))
+(add-to-list 'auto-mode-alist '("\\.gs\\'" . glsl-mode))
 (add-to-list 'auto-mode-alist '("\\.fs\\'" . glsl-mode))
+
+(defun win-resize-top-or-bot ()
+  "Figure out if the current window is on top, bottom or in the
+middle"
+  (let* ((win-edges (window-edges))
+	 (this-window-y-min (nth 1 win-edges))
+	 (this-window-y-max (nth 3 win-edges))
+	 (fr-height (frame-height)))
+    (cond
+     ((eq 0 this-window-y-min) "top")
+     ((eq (- fr-height 1) this-window-y-max) "bot")
+     (t "mid"))))
+(defun win-resize-left-or-right ()
+  "Figure out if the current window is to the left, right or in the
+middle"
+  (let* ((win-edges (window-edges))
+	 (this-window-x-min (nth 0 win-edges))
+	 (this-window-x-max (nth 2 win-edges))
+	 (fr-width (frame-width)))
+    (cond
+     ((eq 0 this-window-x-min) "left")
+     ((eq (+ fr-width 4) this-window-x-max) "right")
+     (t "mid"))))
+(defun win-resize-enlarge-horiz ()
+  (interactive)
+  (cond
+   ((equal "top" (win-resize-top-or-bot)) (enlarge-window -1))
+   ((equal "bot" (win-resize-top-or-bot)) (enlarge-window 1))
+   ((equal "mid" (win-resize-top-or-bot)) (enlarge-window -1))
+   (t (message "nil"))))
+(defun win-resize-minimize-horiz ()
+  (interactive)
+  (cond
+   ((equal "top" (win-resize-top-or-bot)) (enlarge-window 1))
+   ((equal "bot" (win-resize-top-or-bot)) (enlarge-window -1))
+   ((equal "mid" (win-resize-top-or-bot)) (enlarge-window 1))
+   (t (message "nil"))))
+(defun win-resize-enlarge-vert ()
+  (interactive)
+  (cond
+   ((equal "left" (win-resize-left-or-right)) (enlarge-window-horizontally -1))
+   ((equal "right" (win-resize-left-or-right)) (enlarge-window-horizontally 1))
+   ((equal "mid" (win-resize-left-or-right)) (enlarge-window-horizontally -1))))
+(defun win-resize-minimize-vert ()
+  (interactive)
+  (cond
+   ((equal "left" (win-resize-left-or-right)) (enlarge-window-horizontally 1))
+   ((equal "right" (win-resize-left-or-right)) (enlarge-window-horizontally -1))
+   ((equal "mid" (win-resize-left-or-right)) (enlarge-window-horizontally 1))))
+(global-set-key [C-M-down] 'win-resize-mi2nimize-vert)
+(global-set-key [C-M-up] 'win-resize-enlarge-vert)
+(global-set-key [C-M-left] 'win-resize-minimize-horiz)
+(global-set-key [C-M-right] 'win-resize-enlarge-horiz)
+(global-set-key [C-M-up] 'win-resize-enlarge-horiz)
+(global-set-key [C-M-down] 'win-resize-minimize-horiz)
+(global-set-key [C-M-left] 'win-resize-enlarge-vert)
+(global-set-key [C-M-right] 'win-resize-minimize-vert)
 
 (defun rename-file-and-buffer (new-name)
   (interactive "sNew name: ")
@@ -143,7 +202,7 @@
 (global-hl-line-mode 1)
 (set-face-background 'hl-line "light blue")
 
-(defvar font-lock-modes '(c++-mode c-mode emacs-lisp-mode lisp-mode))
+(defvar font-lock-modes '(c++-mode c-mode glsl-mode emacs-lisp-mode lisp-mode))
 (make-face 'font-lock-todo-face)
 (make-face 'font-lock-note-face)
 (make-face 'font-lock-fixme-face)
