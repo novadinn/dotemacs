@@ -31,7 +31,7 @@
 (fset 'yes-or-no-p 'y-or-n-p)
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
-(windmove-default-keybindings 'meta)
+;; (windmove-default-keybindings 'meta)
 
 (defvar backup-dir (expand-file-name "~/.emacs.d/emacs-backup/"))
 (defvar autosave-dir (expand-file-name "~/.emacs.d/autosave/"))
@@ -43,8 +43,8 @@
 
 (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
 (add-to-list 'auto-mode-alist '("\\.vs\\'" . glsl-mode))
-(add-to-list 'auto-mode-alist '("\\.gs\\'" . glsl-mode))
 (add-to-list 'auto-mode-alist '("\\.fs\\'" . glsl-mode))
+(add-to-list 'auto-mode-alist '("\\.gs\\'" . glsl-mode))
 
 (defun win-resize-top-or-bot ()
   "Figure out if the current window is on top, bottom or in the
