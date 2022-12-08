@@ -5,33 +5,60 @@
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
-(use-package try :ensure t)
-(use-package which-key :ensure t :config (which-key-mode))
+
+(use-package try
+  :ensure t)
+(use-package which-key
+  :ensure t
+  :config (which-key-mode))
 (use-package modern-cpp-font-lock
   :ensure t)
+(use-package ace-window
+  :ensure t
+  :init
+  (progn
+    (global-set-key [remap other-window] 'ace-window)
+    (custom-set-faces
+     '(aw-leading-char-face
+       ((t (:inherit ace-jump-face-foreground :height 1.5)))))))
+
+(setq aquamacs (featurep 'aquamacs))
+(setq linux (featurep 'x))
+(setq win32 (not (or aquamacs linux)))
+(when win32
+  (set-face-attribute 'default nil :font "Consolas-11")
+  (setq makescript "build.bat"))
+(when aquamacs
+  (setq makescript "./build.macosx"))
+(when linux
+  (setq makescript "./build.sh")
+  (show-paren-mode 1)
+  (setq default-directory "~/")
+  (setq ring-bell-function #'ignore))
 
 (setq inhibit-splash-screen t)
+(setq visible-bell 1)
 (add-hook 'window-setup-hook 'toggle-frame-maximized t)
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
-(setq default-directory "D:/Projects/")
-(setq visible-bell 1)
 (add-to-list 'default-frame-alist '(height . 40))
 (add-to-list 'default-frame-alist '(width . 90))
-(setq c-default-style "linux"
-      c-basic-offset 4)
-(add-hook 'prog-mode-hook 'display-line-numbers-mode)
+
+;; (put 'upcase-region 'disabled nil)
+;; (put 'downcase-region 'disabled nil)
+
 (setq-default truncate-lines t)
-(delete-selection-mode 1)
 (setq undo-limit 20000000)
 (setq undo-strong-limit 40000000)
 (setq scroll-step 1)
 (setq confirm-kill-emacs 'y-or-n-p)
 (fset 'yes-or-no-p 'y-or-n-p)
-(put 'upcase-region 'disabled nil)
-(put 'downcase-region 'disabled nil)
-;; (windmove-default-keybindings 'meta)
+(delete-selection-mode 1)
+(add-hook 'prog-mode-hook 'display-line-numbers-mode)
+
+(setq c-default-style "linux"
+      c-basic-offset 4)
 
 (defvar backup-dir (expand-file-name "~/.emacs.d/emacs-backup/"))
 (defvar autosave-dir (expand-file-name "~/.emacs.d/autosave/"))
@@ -41,10 +68,14 @@
 (setq backup-directory-alist backup-directory-alist)
 (setq auto-save-directory autosave-dir)
 
-(add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
-(add-to-list 'auto-mode-alist '("\\.vs\\'" . glsl-mode))
-(add-to-list 'auto-mode-alist '("\\.fs\\'" . glsl-mode))
-(add-to-list 'auto-mode-alist '("\\.gs\\'" . glsl-mode))
+;; (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
+;; (add-to-list 'auto-mode-alist '("\\.vs\\'" . glsl-mode))
+;; (add-to-list 'auto-mode-alist '("\\.fs\\'" . glsl-mode))
+;; (add-to-list 'auto-mode-alist '("\\.gs\\'" . glsl-mode))
+
+(defun dotemacs ()
+  (interactive)
+  (switch-to-buffer (find-file-noselect "~/.emacs.d/init.el")))
 
 (defun win-resize-top-or-bot ()
   "Figure out if the current window is on top, bottom or in the
@@ -103,6 +134,11 @@ middle"
 (global-set-key [C-M-left] 'win-resize-enlarge-vert)
 (global-set-key [C-M-right] 'win-resize-minimize-vert)
 
+(defun kill-other-buffers ()
+  "Kill all other buffers."
+  (interactive)
+  (mapc 'kill-buffer (delq (current-buffer) (buffer-list))))
+
 (defun rename-file-and-buffer (new-name)
   (interactive "sNew name: ")
   (let ((name (buffer-name))
@@ -138,7 +174,6 @@ middle"
          (progn (move-beginning-of-line nil)
                 (when (= (line-beginning-position) (line-end-position))
                   (save-excursion (indent-according-to-mode)))))))
-             
 (global-set-key (kbd "<home>") 'back-to-indentation-or-beginning)
 
 (defun move-text-internal (arg)
@@ -173,7 +208,6 @@ middle"
 (global-set-key [M-up] 'move-text-up)
 (global-set-key [M-down] 'move-text-down)
 
-(setq makescript "build.bat")
 (defun find-project-directory ()
   (defun find-project-directory-recursive ()
     (interactive)
@@ -197,8 +231,6 @@ middle"
 (add-to-list 'custom-theme-load-path theme-load-path)
 (if (file-exists-p (concat theme-load-path "vim-colors-theme.el"))
     (load-theme 'vim-colors t))
-(set-face-attribute 'default nil :font "Consolas-11")
-;; highlight current line
 (global-hl-line-mode 1)
 (set-face-background 'hl-line "light blue")
 
@@ -217,28 +249,13 @@ middle"
 (modify-face 'font-lock-note-face "green" nil nil t nil t nil nil)
 (modify-face 'font-lock-fixme-face "slate blue" nil nil t nil t nil nil)
 
-(defvar last-file-name-handler-alist file-name-handler-alist)
-(setq gc-cons-threshold 402653184
-      gc-cons-percentage 0.6
-      file-name-handler-alist nil)
-(add-hook 'emacs-startup-hook
-	  (lambda ()
-	    (progn
-	      (setq gc-cons-threshold 16777216
-		    gc-cons-percentage 0.1
-		    file-name-handler-alist last-file-name-handler-alist))
-	    (message "Emacs ready in %s with %d garbage collections."
-                     (format "%.2f seconds"
-                             (float-time
-                              (time-subtract after-init-time before-init-time)))
-                     gcs-done)))
-
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages '(glsl-mode which-key try use-package)))
+ '(ispell-dictionary nil)
+ '(package-selected-packages '(ace-window glsl-mode which-key try use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
