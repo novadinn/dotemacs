@@ -21,6 +21,28 @@
     (custom-set-faces
      '(aw-leading-char-face
        ((t (:inherit ace-jump-face-foreground :height 1.5)))))))
+(use-package undo-tree
+  :ensure t
+  :init
+  (global-undo-tree-mode)
+  (global-undo-tree-mode)
+  (setq undo-tree-auto-save-history t)
+  (setq undo-tree-history-directory-alist '(("." . "~/.emacs.d/undo"))))
+(use-package expand-region
+  :ensure t
+  :config
+  (global-set-key (kbd "C-=") 'er/expand-region))
+(use-package git-gutter
+  :ensure t
+  :init
+  (global-git-gutter-mode +1))
+(use-package ggtags
+  :ensure t
+  :config
+  (add-hook 'c-mode-common-hook
+	    (lambda ()
+	      (when (derived-mode-p 'c-mode 'c++-mode)
+		(ggtags-mode 1)))))
 
 (setq aquamacs (featurep 'aquamacs))
 (setq linux (featurep 'x))
@@ -38,12 +60,14 @@
 
 (setq inhibit-splash-screen t)
 (setq visible-bell 1)
+(setq auto-revert-verbose nil)
 (add-hook 'window-setup-hook 'toggle-frame-maximized t)
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
 (add-to-list 'default-frame-alist '(height . 40))
 (add-to-list 'default-frame-alist '(width . 90))
+(global-auto-revert-mode 1)
 
 ;; (put 'upcase-region 'disabled nil)
 ;; (put 'downcase-region 'disabled nil)
@@ -68,10 +92,12 @@
 (setq backup-directory-alist backup-directory-alist)
 (setq auto-save-directory autosave-dir)
 
-;; (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
-;; (add-to-list 'auto-mode-alist '("\\.vs\\'" . glsl-mode))
-;; (add-to-list 'auto-mode-alist '("\\.fs\\'" . glsl-mode))
-;; (add-to-list 'auto-mode-alist '("\\.gs\\'" . glsl-mode))
+(add-to-list 'auto-mode-alist '("\\.vert\\'" . glsl-mode))
+(add-to-list 'auto-mode-alist '("\\.tesc\\'" . glsl-mode))
+(add-to-list 'auto-mode-alist '("\\.tese\\'" . glsl-mode))
+(add-to-list 'auto-mode-alist '("\\.geom\\'" . glsl-mode))
+(add-to-list 'auto-mode-alist '("\\.frag\\'" . glsl-mode))
+(add-to-list 'auto-mode-alist '("\\.comp\\'" . glsl-mode))
 
 (defun dotemacs ()
   (interactive)
@@ -125,7 +151,7 @@ middle"
    ((equal "left" (win-resize-left-or-right)) (enlarge-window-horizontally 1))
    ((equal "right" (win-resize-left-or-right)) (enlarge-window-horizontally -1))
    ((equal "mid" (win-resize-left-or-right)) (enlarge-window-horizontally 1))))
-(global-set-key [C-M-down] 'win-resize-mi2nimize-vert)
+(global-set-key [C-M-down] 'win-resize-minimize-vert)
 (global-set-key [C-M-up] 'win-resize-enlarge-vert)
 (global-set-key [C-M-left] 'win-resize-minimize-horiz)
 (global-set-key [C-M-right] 'win-resize-enlarge-horiz)
@@ -138,6 +164,11 @@ middle"
   "Kill all other buffers."
   (interactive)
   (mapc 'kill-buffer (delq (current-buffer) (buffer-list))))
+
+(defun swap-windows ()
+  (interactive)
+  (ace-swap-window)
+  (aw-flip-window))
 
 (defun rename-file-and-buffer (new-name)
   (interactive "sNew name: ")
@@ -255,10 +286,11 @@ middle"
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(ispell-dictionary nil)
- '(package-selected-packages '(ace-window glsl-mode which-key try use-package)))
+ '(package-selected-packages
+   '(ggtags git-gutter expand-region undo-tree ace-window glsl-mode which-key try use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(aw-leading-char-face ((t (:inherit ace-jump-face-foreground :height 1.5)))))
