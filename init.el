@@ -21,28 +21,6 @@
     (custom-set-faces
      '(aw-leading-char-face
        ((t (:inherit ace-jump-face-foreground :height 1.5)))))))
-(use-package undo-tree
-  :ensure t
-  :init
-  (global-undo-tree-mode)
-  (global-undo-tree-mode)
-  (setq undo-tree-auto-save-history t)
-  (setq undo-tree-history-directory-alist '(("." . "~/.emacs.d/undo"))))
-(use-package expand-region
-  :ensure t
-  :config
-  (global-set-key (kbd "C-=") 'er/expand-region))
-(use-package git-gutter
-  :ensure t
-  :init
-  (global-git-gutter-mode +1))
-(use-package ggtags
-  :ensure t
-  :config
-  (add-hook 'c-mode-common-hook
-	    (lambda ()
-	      (when (derived-mode-p 'c-mode 'c++-mode)
-		(ggtags-mode 1)))))
 
 (setq aquamacs (featurep 'aquamacs))
 (setq linux (featurep 'x))
@@ -248,9 +226,9 @@ middle"
   (interactive)
   (setq find-project-from-directory default-directory)
   (switch-to-buffer-other-window "*compilation*")
-    (cd find-project-from-directory)
-    (find-project-directory-recursive)
-    (setq last-compilation-directory default-directory))
+  (cd find-project-from-directory)
+  (find-project-directory-recursive)
+  (setq last-compilation-directory default-directory))
 (defun make-build()
   (interactive)
   (if (find-project-directory)
@@ -258,12 +236,27 @@ middle"
   (other-window 1))
 (global-set-key [f5] 'make-build)
 
+(defvar install-theme-loading-times nil
+  "An association list of time strings and theme names.
+The themes will be loaded at the specified time every day.")
+(defvar install-theme-timers nil)
+(defun install-theme-loading-at-times ()
+  "Set up theme loading according to `install-theme-loading-at-times`"
+  (interactive)
+  (dolist (timer install-theme-timers)
+    (cancel-timer timer))
+  (setq install-theme-timers nil)
+  (dolist (time-theme install-theme-loading-times)
+    (add-to-list 'install-theme-timers
+		 (run-at-time (car time-theme) (* 60 60 24) 'load-theme (cdr time-theme)))))
+
 (defvar theme-load-path "~/.emacs.d/themes/")
 (add-to-list 'custom-theme-load-path theme-load-path)
-(if (file-exists-p (concat theme-load-path "vim-colors-theme.el"))
-    (load-theme 'vim-colors t))
 (global-hl-line-mode 1)
-(set-face-background 'hl-line "light blue")
+;; (set-face-background 'hl-line "light blue")
+(setq install-theme-loading-times '(("9:00am" . moe-light)
+				    ("8:00pm" . moe-dark)))
+(install-theme-loading-at-times)
 
 (defvar font-lock-modes '(c++-mode c-mode glsl-mode emacs-lisp-mode lisp-mode))
 (make-face 'font-lock-todo-face)
@@ -285,9 +278,10 @@ middle"
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   '("76bebbc3c8938de48fd50881a2692bc29c022d08f27555202a079c407f255609" "7df8a91fed857487fcb79868e44247ed92a8c58ea0bbd3fe0f3da1f9370f2c7f" default))
  '(ispell-dictionary nil)
- '(package-selected-packages
-   '(ggtags git-gutter expand-region undo-tree ace-window glsl-mode which-key try use-package)))
+ '(package-selected-packages '(moe-theme ace-window glsl-mode which-key try use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
