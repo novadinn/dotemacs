@@ -39,7 +39,6 @@
 (setq inhibit-splash-screen t)
 (setq visible-bell 1)
 (setq auto-revert-verbose nil)
-(add-hook 'window-setup-hook 'toggle-frame-maximized t)
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
@@ -185,38 +184,6 @@ middle"
                   (save-excursion (indent-according-to-mode)))))))
 (global-set-key (kbd "<home>") 'back-to-indentation-or-beginning)
 
-(defun move-text-internal (arg)
-  (cond
-   ((and mark-active transient-mark-mode)
-    (if (> (point) (mark))
-        (exchange-point-and-mark))
-    (let ((column (current-column))
-          (text (delete-and-extract-region (point) (mark))))
-      (forward-line arg)
-      (move-to-column column t)
-      (set-mark (point))
-      (insert text)
-      (exchange-point-and-mark)
-      (setq deactivate-mark nil)))
-   (t
-    (let ((column (current-column)))
-      (beginning-of-line)
-      (when (or (> arg 0) (not (bobp)))
-        (forward-line)
-        (when (or (< arg 0) (not (eobp)))
-          (transpose-lines arg))
-        (forward-line -1))
-      (move-to-column column t)))))
-(defun move-text-down (arg)
-  (interactive "*p")
-  (move-text-internal arg))
-(defun move-text-up (arg)
-  (interactive "*p")
-  (move-text-internal (- arg)))
-(provide 'move-text)
-(global-set-key [M-up] 'move-text-up)
-(global-set-key [M-down] 'move-text-down)
-
 (defun find-project-directory ()
   (defun find-project-directory-recursive ()
     (interactive)
@@ -236,29 +203,29 @@ middle"
   (other-window 1))
 (global-set-key [f5] 'make-build)
 
-(defvar install-theme-loading-times nil
-  "An association list of time strings and theme names.
-The themes will be loaded at the specified time every day.")
-(defvar install-theme-timers nil)
-(defun install-theme-loading-at-times ()
-  "Set up theme loading according to `install-theme-loading-at-times`"
-  (interactive)
-  (dolist (timer install-theme-timers)
-    (cancel-timer timer))
-  (setq install-theme-timers nil)
-  (dolist (time-theme install-theme-loading-times)
-    (add-to-list 'install-theme-timers
-		 (run-at-time (car time-theme) (* 60 60 24) 'load-theme (cdr time-theme)))))
-
 (defvar theme-load-path "~/.emacs.d/themes/")
 (add-to-list 'custom-theme-load-path theme-load-path)
 (global-hl-line-mode 1)
 ;; (set-face-background 'hl-line "light blue")
-(setq install-theme-loading-times '(("9:00am" . moe-light)
-				    ("8:00pm" . moe-dark)))
-(install-theme-loading-at-times)
+(defvar *dark-theme* 'doom-ir-black)
+(defvar *light-theme* 'doom-acario-light)
+(defvar current-theme *dark-theme*)
+(defadvice load-theme (before theme-dont-propagate activate)
+  "Disable theme before loading new one."
+  (mapc #'disable-theme custom-enabled-themes))
+(defun next-theme (theme)
+  (if (eq theme 'default)
+      (disable-theme current-theme)
+    (progn
+      (load-theme theme t)))
+  (setq current-theme theme))
+(defun toggle-theme ()
+  (interactive)
+  (cond ((eq current-theme *dark-theme*) (next-theme *light-theme*))
+        ((eq current-theme *light-theme*) (next-theme *dark-theme*))))
+(next-theme current-theme)
 
-(defvar font-lock-modes '(c++-mode c-mode glsl-mode emacs-lisp-mode lisp-mode))
+(defvar font-lock-modes '(c++-mode c-mode csharp-mode glsl-mode emacs-lisp-mode lisp-mode))
 (make-face 'font-lock-todo-face)
 (make-face 'font-lock-note-face)
 (make-face 'font-lock-fixme-face)
@@ -278,10 +245,45 @@ The themes will be loaded at the specified time every day.")
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(ansi-color-names-vector
+   ["#E5E9F0" "#99324B" "#4F894C" "#9A7500" "#3B6EA8" "#97365B" "#398EAC" "#3B4252"])
  '(custom-safe-themes
-   '("76bebbc3c8938de48fd50881a2692bc29c022d08f27555202a079c407f255609" "7df8a91fed857487fcb79868e44247ed92a8c58ea0bbd3fe0f3da1f9370f2c7f" default))
+   '("1aa4243143f6c9f2a51ff173221f4fd23a1719f4194df6cef8878e75d349613d" "443e2c3c4dd44510f0ea8247b438e834188dc1c6fb80785d83ad3628eadf9294" "631c52620e2953e744f2b56d102eae503017047fb43d65ce028e88ef5846ea3b" "2dd4951e967990396142ec54d376cced3f135810b2b69920e77103e0bcedfba9" default))
+ '(exwm-floating-border-color "#c2c6cb")
+ '(fci-rule-color "#AEBACF")
+ '(highlight-tail-colors ((("#d6dfdf") . 0) (("#d3dfe9") . 20)))
  '(ispell-dictionary nil)
- '(package-selected-packages '(moe-theme ace-window glsl-mode which-key try use-package)))
+ '(jdee-db-active-breakpoint-face-colors (cons "#F0F4FC" "#5d86b6"))
+ '(jdee-db-requested-breakpoint-face-colors (cons "#F0F4FC" "#4F894C"))
+ '(jdee-db-spec-breakpoint-face-colors (cons "#F0F4FC" "#B8C5DB"))
+ '(objed-cursor-color "#99324B")
+ '(package-selected-packages
+   '(lua-mode doom-themes csharp-mode moe-theme ace-window glsl-mode which-key try use-package))
+ '(pdf-view-midnight-colors (cons "#3B4252" "#E5E9F0"))
+ '(rustic-ansi-faces
+   ["#E5E9F0" "#99324B" "#4F894C" "#9A7500" "#3B6EA8" "#97365B" "#398EAC" "#3B4252"])
+ '(vc-annotate-background "#E5E9F0")
+ '(vc-annotate-color-map
+   (list
+    (cons 20 "#4F894C")
+    (cons 40 "#688232")
+    (cons 60 "#817b19")
+    (cons 80 "#9A7500")
+    (cons 100 "#a0640c")
+    (cons 120 "#a65419")
+    (cons 140 "#AC4426")
+    (cons 160 "#a53f37")
+    (cons 180 "#9e3a49")
+    (cons 200 "#97365B")
+    (cons 220 "#973455")
+    (cons 240 "#983350")
+    (cons 260 "#99324B")
+    (cons 280 "#a0566f")
+    (cons 300 "#a87b93")
+    (cons 320 "#b0a0b6")
+    (cons 340 "#AEBACF")
+    (cons 360 "#AEBACF")))
+ '(vc-annotate-very-old-color nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
