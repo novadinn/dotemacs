@@ -27,11 +27,7 @@
 (setq win32 (not (or aquamacs linux)))
 (when win32
   (set-face-attribute 'default nil :font "Consolas-11")
-  (setq makescript "build.bat"))
-(when aquamacs
-  (setq makescript "./build.macosx"))
 (when linux
-  (setq makescript "./build.sh")
   (show-paren-mode 1)
   (setq default-directory "~/")
   (setq ring-bell-function #'ignore))
@@ -46,9 +42,6 @@
 (add-to-list 'default-frame-alist '(width . 90))
 (global-auto-revert-mode 1)
 
-;; (put 'upcase-region 'disabled nil)
-;; (put 'downcase-region 'disabled nil)
-
 (setq-default truncate-lines t)
 (setq undo-limit 20000000)
 (setq undo-strong-limit 40000000)
@@ -58,9 +51,6 @@
 (delete-selection-mode 1)
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 
-(setq c-default-style "linux"
-      c-basic-offset 4)
-
 (defvar backup-dir (expand-file-name "~/.emacs.d/emacs-backup/"))
 (defvar autosave-dir (expand-file-name "~/.emacs.d/autosave/"))
 (setq backup-directory-alist (list (cons ".*" backup-dir)))
@@ -68,13 +58,6 @@
 (setq auto-save-file-name-transforms `((".*" ,autosave-dir t)))
 (setq backup-directory-alist backup-directory-alist)
 (setq auto-save-directory autosave-dir)
-
-(add-to-list 'auto-mode-alist '("\\.vert\\'" . glsl-mode))
-(add-to-list 'auto-mode-alist '("\\.tesc\\'" . glsl-mode))
-(add-to-list 'auto-mode-alist '("\\.tese\\'" . glsl-mode))
-(add-to-list 'auto-mode-alist '("\\.geom\\'" . glsl-mode))
-(add-to-list 'auto-mode-alist '("\\.frag\\'" . glsl-mode))
-(add-to-list 'auto-mode-alist '("\\.comp\\'" . glsl-mode))
 
 (defun dotemacs ()
   (interactive)
@@ -184,25 +167,6 @@ middle"
                   (save-excursion (indent-according-to-mode)))))))
 (global-set-key (kbd "<home>") 'back-to-indentation-or-beginning)
 
-(defun find-project-directory ()
-  (defun find-project-directory-recursive ()
-    (interactive)
-    (if (file-exists-p makescript) t
-      (cd "../")
-      (find-project-directory-recursive)))
-  (interactive)
-  (setq find-project-from-directory default-directory)
-  (switch-to-buffer-other-window "*compilation*")
-  (cd find-project-from-directory)
-  (find-project-directory-recursive)
-  (setq last-compilation-directory default-directory))
-(defun make-build()
-  (interactive)
-  (if (find-project-directory)
-      (compile makescript))
-  (other-window 1))
-(global-set-key [f5] 'make-build)
-
 (defvar theme-load-path "~/.emacs.d/themes/")
 (add-to-list 'custom-theme-load-path theme-load-path)
 (global-hl-line-mode 1)
@@ -239,54 +203,3 @@ middle"
 (modify-face 'font-lock-todo-face "red" nil nil t nil t nil nil)
 (modify-face 'font-lock-note-face "green" nil nil t nil t nil nil)
 (modify-face 'font-lock-fixme-face "slate blue" nil nil t nil t nil nil)
-
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(ansi-color-names-vector
-   ["#E5E9F0" "#99324B" "#4F894C" "#9A7500" "#3B6EA8" "#97365B" "#398EAC" "#3B4252"])
- '(custom-safe-themes
-   '("1aa4243143f6c9f2a51ff173221f4fd23a1719f4194df6cef8878e75d349613d" "443e2c3c4dd44510f0ea8247b438e834188dc1c6fb80785d83ad3628eadf9294" "631c52620e2953e744f2b56d102eae503017047fb43d65ce028e88ef5846ea3b" "2dd4951e967990396142ec54d376cced3f135810b2b69920e77103e0bcedfba9" default))
- '(exwm-floating-border-color "#c2c6cb")
- '(fci-rule-color "#AEBACF")
- '(highlight-tail-colors ((("#d6dfdf") . 0) (("#d3dfe9") . 20)))
- '(ispell-dictionary nil)
- '(jdee-db-active-breakpoint-face-colors (cons "#F0F4FC" "#5d86b6"))
- '(jdee-db-requested-breakpoint-face-colors (cons "#F0F4FC" "#4F894C"))
- '(jdee-db-spec-breakpoint-face-colors (cons "#F0F4FC" "#B8C5DB"))
- '(objed-cursor-color "#99324B")
- '(package-selected-packages
-   '(lua-mode doom-themes csharp-mode moe-theme ace-window glsl-mode which-key try use-package))
- '(pdf-view-midnight-colors (cons "#3B4252" "#E5E9F0"))
- '(rustic-ansi-faces
-   ["#E5E9F0" "#99324B" "#4F894C" "#9A7500" "#3B6EA8" "#97365B" "#398EAC" "#3B4252"])
- '(vc-annotate-background "#E5E9F0")
- '(vc-annotate-color-map
-   (list
-    (cons 20 "#4F894C")
-    (cons 40 "#688232")
-    (cons 60 "#817b19")
-    (cons 80 "#9A7500")
-    (cons 100 "#a0640c")
-    (cons 120 "#a65419")
-    (cons 140 "#AC4426")
-    (cons 160 "#a53f37")
-    (cons 180 "#9e3a49")
-    (cons 200 "#97365B")
-    (cons 220 "#973455")
-    (cons 240 "#983350")
-    (cons 260 "#99324B")
-    (cons 280 "#a0566f")
-    (cons 300 "#a87b93")
-    (cons 320 "#b0a0b6")
-    (cons 340 "#AEBACF")
-    (cons 360 "#AEBACF")))
- '(vc-annotate-very-old-color nil))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(aw-leading-char-face ((t (:inherit ace-jump-face-foreground :height 1.5)))))
